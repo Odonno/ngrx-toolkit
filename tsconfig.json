@@ -17,7 +17,15 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "ngrx-toolkit": [
+        "dist/ngrx-toolkit"
+      ],
+      "ngrx-toolkit/*": [
+        "dist/ngrx-toolkit/*"
+      ]
+    }
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
