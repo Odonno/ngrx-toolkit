@@ -2,6 +2,31 @@ import lensPath from 'ramda/src/lensPath';
 import view from 'ramda/src/view';
 import set from 'ramda/src/set';
 
+/**
+ * Create a reducer for a collection of entities that is stored in the state. 
+ * The reducer will contains several functions to help you with collection management:
+ * @exports upsertOne - add a new entity or update only some properties of an entity
+ * @exports upsertMany - add a new entities and/or update only some properties of existing entities
+ * @exports replaceOne - add a new entity or replace an existing entity
+ * @exports replaceOne - add new entities and/or replace existing entities
+ * @exports removeOne - remove an existing entity (if possible)
+ * @exports removeMany - remove multiple entities (if possible)
+ * @exports removeAll - clean the collection by removing all entities
+ * @param collectionSelector Selector function used to access the collection in the state.
+ * @param keySelector Selector used to get the main identifier of an entity in the collection.
+ * @param updateStateFunction Function used to update the state.
+ * 
+ * @example
+ *  const collectionReducer = createCollectionReducer(
+      (state: State) => state.characters,
+      character => character.id,
+      (state, newCollection) => ({
+        ...state,
+        characters: newCollection
+      })
+    );
+    const newState = collectionReducer.replaceOne(initialState, character);
+ */
 export const createCollectionReducer = <TState, TEntity, TEntityKey>(
     collectionSelector: (state: TState) => TEntity[],
     keySelector: (entity: TEntity) => TEntityKey,
@@ -97,6 +122,24 @@ export const createCollectionReducer = <TState, TEntity, TEntityKey>(
     };
 };
 
+/**
+ * Create a collection reducer based on a feature name.
+ * @param featureName Name of the feature (path to the property).
+ * @param keySelector Selector used to get the main identifier of an entity in the collection.
+ * 
+ * @example
+ *  const collectionReducer = createFeatureCollectionReducer<State, Character, number>(
+      'characters',
+      character => character.id
+    );
+    const newState = collectionReducer.replaceOne(initialState, character);
+ * @example
+ *  const collectionReducer = createFeatureCollectionReducer<State, Character, number>(
+      'nested.characters',
+      character => character.id
+    );
+    const newState = collectionReducer.replaceOne(initialState, character);
+ */
 export const createFeatureCollectionReducer = <TState, TEntity, TEntityKey>(
     featureName: string,
     keySelector: (entity: TEntity) => TEntityKey
@@ -107,5 +150,5 @@ export const createFeatureCollectionReducer = <TState, TEntity, TEntityKey>(
         state => view(lensPathFunction, state),
         keySelector,
         (state, entities) => set(lensPathFunction, entities, state)
-    )
+    );
 };
