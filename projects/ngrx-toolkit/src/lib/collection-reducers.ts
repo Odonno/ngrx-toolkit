@@ -1,7 +1,11 @@
+import lensPath from 'ramda/src/lensPath';
+import view from 'ramda/src/view';
+import set from 'ramda/src/set';
+
 export const createCollectionReducer = <TState, TEntity, TEntityKey>(
     collectionSelector: (state: TState) => TEntity[],
     keySelector: (entity: TEntity) => TEntityKey,
-    updateStateFunction: (state: TState, updatedCollection: TEntity[]) => TState // TODO : can we do the same without it?
+    updateStateFunction: (state: TState, updatedCollection: TEntity[]) => TState
 ) => {
     const upsertOne = (state: TState, newEntity: TEntity) => {
         const collection = collectionSelector(state);
@@ -96,11 +100,12 @@ export const createCollectionReducer = <TState, TEntity, TEntityKey>(
 export const createFeatureCollectionReducer = <TState, TEntity, TEntityKey>(
     featureName: string,
     keySelector: (entity: TEntity) => TEntityKey
-) => createCollectionReducer<TState, TEntity, TEntityKey>(
-    state => state[featureName], // TODO : use lens to get state property (if using dot notation)
-    keySelector,
-    (state, entities) => ({
-        ...state,
-        [featureName]: entities
-    })
-);
+) => {
+    const lensPathFunction = lensPath(featureName.split('.'));
+
+    return createCollectionReducer<TState, TEntity, TEntityKey>(
+        state => view(lensPathFunction, state),
+        keySelector,
+        (state, entities) => set(lensPathFunction, entities, state)
+    )
+};
