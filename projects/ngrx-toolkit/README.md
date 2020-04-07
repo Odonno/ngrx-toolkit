@@ -1,24 +1,61 @@
-# NgrxToolkit
+# Ngrx Toolkit
 
-This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.1.3.
+A set of functions and tools to simplify the development of an @ngrx app
 
-## Code scaffolding
+### Collection reducer
 
-Run `ng generate component component-name --project ngrx-toolkit` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module --project ngrx-toolkit`.
-> Note: Don't forget to add `--project ngrx-toolkit` or else it will be added to the default project in your `angular.json` file. 
+Collection reducer is kinda like a lightweight version of @ngrx/entity. The main difference is that it is transparent to your own state. You store collection of entities in your state (see example below) and you will be able to use different reducers functions: 
 
-## Build
+* `upsertOne` - add a new entity or update only some properties of an entity
+* `upsertMany` - add a new entities and/or update only some properties of existing entities
+* `replaceOne` - add a new entity or replace an existing entity
+* `replaceOne` - add new entities and/or replace existing entities
+* `removeOne` - remove an existing entity (if possible)
+* `removeMany` - remove multiple entities (if possible)
+* `removeAll` - clean the collection by removing all entities
 
-Run `ng build ngrx-toolkit` to build the project. The build artifacts will be stored in the `dist/` directory.
+#### createCollectionReducer
 
-## Publishing
+Create a new collection reducer based on the given state.
+Each entity should have a unique key identifier.
 
-After building your library with `ng build ngrx-toolkit`, go to the dist folder `cd dist/ngrx-toolkit` and run `npm publish`.
+Given the following state:
 
-## Running unit tests
+```ts
+type Character = {
+  id: number;
+  name: string;
+}
 
-Run `ng test ngrx-toolkit` to execute the unit tests via [Karma](https://karma-runner.github.io).
+type State = {
+  characters: Character[];
+}
+```
 
-## Further help
+You can create a new collection reducer like that:
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+```ts
+const collectionReducer = createCollectionReducer(
+    (state: State) => state.characters,
+    character => character.id,
+    (state, newCollection) => ({
+        ...state,
+        characters: newCollection
+    })
+);
+
+const newState = collectionReducer.replaceOne(initialState, character);
+```
+
+#### createFeatureCollectionReducer
+
+`createFeatureCollectionReducer` simplifies the creation of a collection reducer using feature name.
+
+```ts
+const collectionReducer = createFeatureCollectionReducer<State, Character, number>(
+    'characters',
+    character => character.id
+);
+
+const newState = collectionReducer.replaceOne(initialState, character);
+```
