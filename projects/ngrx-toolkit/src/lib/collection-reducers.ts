@@ -29,13 +29,13 @@ import set from 'ramda/src/set';
  */
 export const createCollectionReducer = <TState, TEntity, TEntityKey>(
     collectionSelector: (state: TState) => TEntity[],
-    keySelector: (entity: TEntity) => TEntityKey,
+    keySelector: (entity: Partial<TEntity>) => TEntityKey,
     updateStateFunction: (state: TState, updatedCollection: TEntity[]) => TState
 ) => {
-    const upsertOne = (state: TState, newEntity: TEntity) => {
+    const upsertOne = (state: TState, newEntity: Partial<TEntity>) => {
         const collection = collectionSelector(state);
-        const newEntities = [newEntity].filter(e => collection.every(c => keySelector(c) !== keySelector(e)));
-
+        const newEntities = [newEntity].filter(e => collection.every(c => keySelector(c) !== keySelector(e))) as TEntity[];
+        
         return updateStateFunction(
             state,
             collection
@@ -51,9 +51,9 @@ export const createCollectionReducer = <TState, TEntity, TEntityKey>(
                 .concat(newEntities)
         );
     };
-    const upsertMany = (state: TState, entities: TEntity[]) => {
+    const upsertMany = (state: TState, entities: Partial<TEntity>[]) => {
         const collection = collectionSelector(state);
-        const newEntities = entities.filter(e => collection.every(c => keySelector(c) !== keySelector(e)));
+        const newEntities = entities.filter(e => collection.every(c => keySelector(c) !== keySelector(e))) as TEntity[];
 
         return updateStateFunction(
             state,

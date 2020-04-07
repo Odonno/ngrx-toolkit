@@ -4,6 +4,7 @@ import { createCollectionReducer, createFeatureCollectionReducer } from './colle
 type Character = {
   id: number;
   name: string;
+  age: number;
 }
 
 type State = {
@@ -16,32 +17,36 @@ type State = {
 describe('collection reducers', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
-  describe('createCollectionReducer', () => {
-    const initialState = {
+  const initialState = {
+    characters: [
+      {
+        id: 1,
+        name: 'Luke Skywalker',
+        age: 29
+      },
+      {
+        id: 2,
+        name: 'Anakin Skywalker',
+        age: 23
+      }
+    ],
+    nested: {
       characters: [
         {
           id: 1,
-          name: 'Luke Skywalker'
+          name: 'Luke Skywalker',
+          age: 29
         },
         {
           id: 2,
-          name: 'Anakin Skywalker'
+          name: 'Anakin Skywalker',
+          age: 23
         }
-      ],
-      nested: {
-        characters: [
-          {
-            id: 1,
-            name: 'Luke Skywalker'
-          },
-          {
-            id: 2,
-            name: 'Anakin Skywalker'
-          }
-        ]
-      }
-    };
+      ]
+    }
+  };
 
+  describe('createCollectionReducer', () => {
     const characterCollectionReducer = createCollectionReducer(
       (state: State) => state.characters,
       character => character.id,
@@ -50,7 +55,7 @@ describe('collection reducers', () => {
         characters: newCollection
       })
     );
-
+  
     const nestedCharacterCollectionReducer = createCollectionReducer(
       (state: State) => state.nested.characters,
       character => character.id,
@@ -63,6 +68,94 @@ describe('collection reducers', () => {
       })
     );
 
+    describe('upsertOne', () => {
+      describe('direct child state', () => {
+        it('should update one entity if it already exist', () => {
+          // arrange
+
+          // act
+          const characterUpdated = {
+            id: 2,
+            age: 25
+          };
+
+          const newState = characterCollectionReducer.upsertOne(initialState, characterUpdated);
+
+          // assert
+          expect(newState.characters.length).toBe(2);
+          expect(newState.characters[0].name).toBe('Luke Skywalker');
+          expect(newState.characters[0].age).toBe(29);
+          expect(newState.characters[1].name).toBe('Anakin Skywalker');
+          expect(newState.characters[1].age).toBe(23);
+        });
+
+        it('should add one entity if it does not exist', () => {
+          // arrange
+
+          // act
+          const newCharacter = {
+            id: 3,
+            name: 'Han Solo',
+            age: 31
+          };
+
+          const newState = characterCollectionReducer.upsertOne(initialState, newCharacter);
+
+          // assert
+          expect(newState.characters.length).toBe(3);
+          expect(newState.characters[0].name).toBe('Luke Skywalker');
+          expect(newState.characters[0].age).toBe(29);
+          expect(newState.characters[1].name).toBe('Anakin Skywalker');
+          expect(newState.characters[1].age).toBe(23);
+          expect(newState.characters[2].name).toBe('Han Solo');
+          expect(newState.characters[2].age).toBe(31);
+        });
+      });
+
+      describe('nested child state', () => {
+        it('should update one entity if it already exist', () => {
+          // arrange
+
+          // act
+          const characterUpdated = {
+            id: 2,
+            age: 25
+          };
+
+          const newState = nestedCharacterCollectionReducer.upsertOne(initialState, characterUpdated);
+
+          // assert
+          expect(newState.nested.characters.length).toBe(2);
+          expect(newState.nested.characters[0].name).toBe('Luke Skywalker');
+          expect(newState.nested.characters[0].age).toBe(29);
+          expect(newState.nested.characters[1].name).toBe('Anakin Skywalker');
+          expect(newState.nested.characters[1].age).toBe(23);
+        });
+
+        it('should add one entity if it does not exist', () => {
+          // arrange
+
+          // act
+          const newCharacter = {
+            id: 3,
+            name: 'Han Solo',
+            age: 31
+          };
+
+          const newState = nestedCharacterCollectionReducer.upsertOne(initialState, newCharacter);
+
+          // assert
+          expect(newState.nested.characters.length).toBe(3);
+          expect(newState.nested.characters[0].name).toBe('Luke Skywalker');
+          expect(newState.nested.characters[0].age).toBe(29);
+          expect(newState.nested.characters[1].name).toBe('Anakin Skywalker');
+          expect(newState.nested.characters[1].age).toBe(23);
+          expect(newState.nested.characters[2].name).toBe('Han Solo');
+          expect(newState.nested.characters[2].age).toBe(31);
+        });
+      });
+    });
+
     describe('replaceOne', () => {
       describe('direct child state', () => {
         it('should replace one entity if it already exist', () => {
@@ -71,7 +164,8 @@ describe('collection reducers', () => {
           // act
           const characterUpdated = {
             id: 2,
-            name: 'Dark Vador'
+            name: 'Dark Vador',
+            age: 63
           };
 
           const newState = characterCollectionReducer.replaceOne(initialState, characterUpdated);
@@ -80,6 +174,25 @@ describe('collection reducers', () => {
           expect(newState.characters.length).toBe(2);
           expect(newState.characters[0].name).toBe('Luke Skywalker');
           expect(newState.characters[1].name).toBe('Dark Vador');
+        });
+
+        it('should add one entity if it does not exist', () => {
+          // arrange
+
+          // act
+          const newCharacter = {
+            id: 3,
+            name: 'Han Solo',
+            age: 31
+          };
+
+          const newState = characterCollectionReducer.replaceOne(initialState, newCharacter);
+
+          // assert
+          expect(newState.characters.length).toBe(3);
+          expect(newState.characters[0].name).toBe('Luke Skywalker');
+          expect(newState.characters[1].name).toBe('Anakin Skywalker');
+          expect(newState.characters[2].name).toBe('Han Solo');
         });
       });
 
@@ -90,7 +203,8 @@ describe('collection reducers', () => {
           // act
           const characterUpdated = {
             id: 2,
-            name: 'Dark Vador'
+            name: 'Dark Vador',
+            age: 63
           };
 
           const newState = nestedCharacterCollectionReducer.replaceOne(initialState, characterUpdated);
@@ -100,36 +214,30 @@ describe('collection reducers', () => {
           expect(newState.nested.characters[0].name).toBe('Luke Skywalker');
           expect(newState.nested.characters[1].name).toBe('Dark Vador');
         });
+
+        it('should add one entity if it does not exist', () => {
+          // arrange
+
+          // act
+          const newCharacter = {
+            id: 3,
+            name: 'Han Solo',
+            age: 31
+          };
+
+          const newState = nestedCharacterCollectionReducer.replaceOne(initialState, newCharacter);
+
+          // assert
+          expect(newState.nested.characters.length).toBe(3);
+          expect(newState.nested.characters[0].name).toBe('Luke Skywalker');
+          expect(newState.nested.characters[1].name).toBe('Anakin Skywalker');
+          expect(newState.nested.characters[2].name).toBe('Han Solo');
+        });
       });
     });
   });
 
   describe('createFeatureCollectionReducer', () => {
-    const initialState = {
-      characters: [
-        {
-          id: 1,
-          name: 'Luke Skywalker'
-        },
-        {
-          id: 2,
-          name: 'Anakin Skywalker'
-        }
-      ],
-      nested: {
-        characters: [
-          {
-            id: 1,
-            name: 'Luke Skywalker'
-          },
-          {
-            id: 2,
-            name: 'Anakin Skywalker'
-          }
-        ]
-      }
-    };
-
     const characterCollectionReducer = createFeatureCollectionReducer<State, Character, number>(
       'characters',
       character => character.id
@@ -140,6 +248,94 @@ describe('collection reducers', () => {
       character => character.id
     );
 
+    describe('upsertOne', () => {
+      describe('direct child state', () => {
+        it('should update one entity if it already exist', () => {
+          // arrange
+
+          // act
+          const characterUpdated = {
+            id: 2,
+            age: 25
+          };
+
+          const newState = characterCollectionReducer.upsertOne(initialState, characterUpdated);
+
+          // assert
+          expect(newState.characters.length).toBe(2);
+          expect(newState.characters[0].name).toBe('Luke Skywalker');
+          expect(newState.characters[0].age).toBe(29);
+          expect(newState.characters[1].name).toBe('Anakin Skywalker');
+          expect(newState.characters[1].age).toBe(23);
+        });
+
+        it('should add one entity if it does not exist', () => {
+          // arrange
+
+          // act
+          const newCharacter = {
+            id: 3,
+            name: 'Han Solo',
+            age: 31
+          };
+
+          const newState = characterCollectionReducer.upsertOne(initialState, newCharacter);
+
+          // assert
+          expect(newState.characters.length).toBe(3);
+          expect(newState.characters[0].name).toBe('Luke Skywalker');
+          expect(newState.characters[0].age).toBe(29);
+          expect(newState.characters[1].name).toBe('Anakin Skywalker');
+          expect(newState.characters[1].age).toBe(23);
+          expect(newState.characters[2].name).toBe('Han Solo');
+          expect(newState.characters[2].age).toBe(31);
+        });
+      });
+
+      describe('nested child state', () => {
+        it('should update one entity if it already exist', () => {
+          // arrange
+
+          // act
+          const characterUpdated = {
+            id: 2,
+            age: 25
+          };
+
+          const newState = nestedCharacterCollectionReducer.upsertOne(initialState, characterUpdated);
+
+          // assert
+          expect(newState.nested.characters.length).toBe(2);
+          expect(newState.nested.characters[0].name).toBe('Luke Skywalker');
+          expect(newState.nested.characters[0].age).toBe(29);
+          expect(newState.nested.characters[1].name).toBe('Anakin Skywalker');
+          expect(newState.nested.characters[1].age).toBe(23);
+        });
+
+        it('should add one entity if it does not exist', () => {
+          // arrange
+
+          // act
+          const newCharacter = {
+            id: 3,
+            name: 'Han Solo',
+            age: 31
+          };
+
+          const newState = nestedCharacterCollectionReducer.upsertOne(initialState, newCharacter);
+
+          // assert
+          expect(newState.nested.characters.length).toBe(3);
+          expect(newState.nested.characters[0].name).toBe('Luke Skywalker');
+          expect(newState.nested.characters[0].age).toBe(29);
+          expect(newState.nested.characters[1].name).toBe('Anakin Skywalker');
+          expect(newState.nested.characters[1].age).toBe(23);
+          expect(newState.nested.characters[2].name).toBe('Han Solo');
+          expect(newState.nested.characters[2].age).toBe(31);
+        });
+      });
+    });
+
     describe('replaceOne', () => {
       describe('direct child state', () => {
         it('should replace one entity if it already exist', () => {
@@ -148,7 +344,8 @@ describe('collection reducers', () => {
           // act
           const characterUpdated = {
             id: 2,
-            name: 'Dark Vador'
+            name: 'Dark Vador',
+            age: 63
           };
 
           const newState = characterCollectionReducer.replaceOne(initialState, characterUpdated);
@@ -167,7 +364,8 @@ describe('collection reducers', () => {
           // act
           const characterUpdated = {
             id: 2,
-            name: 'Dark Vador'
+            name: 'Dark Vador',
+            age: 63
           };
 
           const newState = nestedCharacterCollectionReducer.replaceOne(initialState, characterUpdated);
