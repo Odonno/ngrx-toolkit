@@ -314,6 +314,32 @@ describe('collection reducers', () => {
         });
       });
     });
+
+    describe('removeAll', () => {
+      describe('direct child state', () => {
+        it('should have no entity', () => {
+          // arrange
+
+          // act
+          const newState = characterCollectionReducer.removeAll(initialState);
+
+          // assert
+          expect(newState.characters.length).toBe(0);
+        });
+      });
+
+      describe('nested child state', () => {
+        it('should have no entity', () => {
+          // arrange
+
+          // act
+          const newState = nestedCharacterCollectionReducer.removeAll(initialState);
+
+          // assert
+          expect(newState.nested.characters.length).toBe(0);
+        });
+      });
+    });
   });
 
   describe('createFeatureCollectionReducer', () => {
@@ -570,6 +596,32 @@ describe('collection reducers', () => {
           expect(newState.nested.characters[0].name).toBe('Luke Skywalker');
           expect(newState.nested.characters[1].name).toBe('Anakin Skywalker');
           expect(newState.nested.characters[2].name).toBe('Han Solo');
+        });
+      });
+    });
+
+    describe('removeAll', () => {
+      describe('direct child state', () => {
+        it('should have no entity', () => {
+          // arrange
+
+          // act
+          const newState = characterCollectionReducer.removeAll(initialState);
+
+          // assert
+          expect(newState.characters.length).toBe(0);
+        });
+      });
+
+      describe('nested child state', () => {
+        it('should have no entity', () => {
+          // arrange
+
+          // act
+          const newState = nestedCharacterCollectionReducer.removeAll(initialState);
+
+          // assert
+          expect(newState.nested.characters.length).toBe(0);
         });
       });
     });
